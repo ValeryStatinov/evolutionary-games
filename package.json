@@ -22,6 +22,7 @@
     "@rollup/plugin-commonjs": "^19.0.1",
     "@rollup/plugin-html": "^0.2.3",
     "@rollup/plugin-node-resolve": "^13.0.2",
+    "@rollup/plugin-replace": "^3.0.0",
     "@rollup/plugin-typescript": "^8.2.3",
     "@rollup/plugin-url": "^6.0.0",
     "@types/react": "^17.0.14",
@@ -55,6 +56,9 @@
     "typescript": "^4.3.5"
   },
   "dependencies": {
+    "classnames": "^2.3.1",
+    "mobx": "^6.3.2",
+    "mobx-react": "^7.2.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2"
   }

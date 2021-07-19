@@ -3,6 +3,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from '@rollup/plugin-typescript'
 import url from '@rollup/plugin-url'
 import html from '@rollup/plugin-html'
+import replace from '@rollup/plugin-replace';
 
 import postcss from 'rollup-plugin-postcss'
 import postcssImport from 'postcss-import'
@@ -21,6 +22,10 @@ const plugins = [
     plugins: [postcssImport()],
   }),
   html({ template: generateHTML }),
+  replace({
+    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+    preventAssignment: true,
+  })
 ]
 
 if (process.env.NODE_ENV === 'development') {
@@ -39,7 +44,7 @@ if (process.env.NODE_ENV === 'development') {
 }
 
 export default {
-  input: 'src/index.ts',
+  input: 'src/index.tsx',
   output: {
     dir: 'build',
     entryFileNames: '[name].[hash].js',

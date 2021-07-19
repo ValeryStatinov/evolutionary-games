@@ -25,11 +25,13 @@ export const generateHTML = ({ attributes, files, meta, publicPath }) => {
     ${metas}
     <title>Evolutionary games</title>
     ${links}
-    ${scripts}
+    
   </head>
 
   <body>
     <div id="app"></div>
   </body>
+
+  ${scripts}
 </html>`;
 };
