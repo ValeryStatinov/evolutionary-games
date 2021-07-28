@@ -1,5 +1,6 @@
 import { Entity } from 'src/entities/Entity'
 import { distanceBetween, Vector2D } from 'src/geometry'
+import { appStore } from 'src/stores/appStore'
 import { WANDERING_WAIT_TIME } from 'src/utils/constants'
 
 export type AnimalState = 'stay' | 'wander' | 'waiting_target'
@@ -33,7 +34,7 @@ export class Animal extends Entity {
   protected goToTarget(): void {
     if (!this.targetPosition_) return
 
-    if (distanceBetween(this.position, this.targetPosition_) <= this.speed_) {
+    if (distanceBetween(this.position, this.targetPosition_) <= 1) {
       this.animalState_ = 'stay'
       this.remainingStayTime_ = Math.random() * WANDERING_WAIT_TIME
       this.targetPosition_ = null
@@ -41,12 +42,12 @@ export class Animal extends Entity {
       return
     }
 
-    const dxdy = new Vector2D(this.direction_).scalarMultiply(this.speed_)
+    const dxdy = new Vector2D(this.direction_).scalarMultiply(this.speed_ * appStore.simulationSpeed_)
     this.position_.addVector2D(dxdy)
   }
 
   protected stay(time: number): void {
-    this.remainingStayTime_ -= time
+    this.remainingStayTime_ -= time * appStore.simulationSpeed_
 
     if (this.remainingStayTime_ < 0) {
       this.animalState_ = 'waiting_target'
