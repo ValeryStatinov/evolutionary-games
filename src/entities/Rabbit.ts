@@ -16,7 +16,7 @@ export class Rabbit extends Animal {
 
   constructor(ctx: CanvasRenderingContext2D, initialPosition?: Vector2D, hungerSpeed?: number) {
     super(ctx, rabbitImage, RABBIT_IMAGE_SIZE, RABBIT_IMAGE_SIZE, RABBIT_SPEED, initialPosition)
-    this.hungerSpeed_ = hungerSpeed || Math.random() * 0.0005 + 0.004
+    this.hungerSpeed_ = hungerSpeed || Math.random() * 0.0005 + 0.008
     this.hunger_ = Math.random() * 40 + 60
   }
 

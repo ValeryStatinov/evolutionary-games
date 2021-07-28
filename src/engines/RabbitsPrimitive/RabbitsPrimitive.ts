@@ -1,3 +1,4 @@
+import { runInAction } from 'mobx'
 import { Blueberrie } from 'src/entities/Blueberrie'
 import { Rabbit } from 'src/entities/Rabbit'
 import { distanceBetween, getRandomVector2DOnCircle, Vector2D } from 'src/geometry'
@@ -5,8 +6,8 @@ import { appStore } from 'src/stores/appStore'
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from 'src/utils/constants'
 
 const INITIAL_RABBITS_NUMBER = 50
-const INITIAL_BLUEBERRIES_NUMBER = 30
-const BLUEBERRIES_PER_MINUTE = 20
+const INITIAL_BLUEBERRIES_NUMBER = 20
+const BLUEBERRIES_PER_MINUTE = 30
 
 export class RabbitsPrimitive {
   paused_ = false
@@ -67,7 +68,7 @@ export class RabbitsPrimitive {
           closestMate.satisfyUrgeToreproduce()
 
           const hungerSpeed = Math.random() > 0.5 ? r.hungerSpeed : closestMate.hungerSpeed
-          const mutatedHungerSpeed = Math.random() < 0.2 ? hungerSpeed + (Math.random() * 0.0006 - 0.0003) : hungerSpeed
+          const mutatedHungerSpeed = Math.random() < 0.2 ? hungerSpeed + (Math.random() * 0.0005 - 0.001) : hungerSpeed
 
           this.rabbits_.add(new Rabbit(this.ctx_, new Vector2D(r.position), mutatedHungerSpeed))
         }
@@ -105,6 +106,16 @@ export class RabbitsPrimitive {
     })
   }
 
+  collectStatistics(): void {
+    let sumHungerSpeed = 0
+    this.rabbits_.forEach((r) => (sumHungerSpeed += r.hungerSpeed))
+
+    runInAction(() => {
+      appStore.avgHungerSpeed = sumHungerSpeed / this.rabbits_.size
+      appStore.populationSize = this.rabbits_.size
+    })
+  }
+
   updateAndDraw(ellapsed: number): void {
     this.ctx_.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
@@ -115,6 +126,7 @@ export class RabbitsPrimitive {
     })
 
     this.updateRabbits(ellapsed)
+    this.collectStatistics()
   }
 
   pause(): void {
