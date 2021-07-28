@@ -11,10 +11,12 @@ export class Rabbit extends Animal {
   private viewRadius_ = 200
   private hunger_
   private hungerSpeed_
+  private urgeToReproduce_ = Math.random() * 30 + 70
+  private urgeToReproduceSpeed_ = 0.002
 
-  constructor(ctx: CanvasRenderingContext2D, initialPosition?: Vector2D) {
+  constructor(ctx: CanvasRenderingContext2D, initialPosition?: Vector2D, hungerSpeed?: number) {
     super(ctx, rabbitImage, RABBIT_IMAGE_SIZE, RABBIT_IMAGE_SIZE, RABBIT_SPEED, initialPosition)
-    this.hungerSpeed_ = Math.random() * 0.0005 + 0.004
+    this.hungerSpeed_ = hungerSpeed || Math.random() * 0.0005 + 0.004
     this.hunger_ = Math.random() * 40 + 60
   }
 
@@ -30,12 +32,28 @@ export class Rabbit extends Animal {
     return this.hunger_ <= 0
   }
 
+  get wantsToMate(): boolean {
+    return this.urgeToReproduce_ < 20
+  }
+
+  get hungerSpeed(): number {
+    return this.hungerSpeed_
+  }
+
   eat(): void {
     this.hunger_ = 100
   }
 
+  satisfyUrgeToreproduce(): void {
+    this.urgeToReproduce_ = 100
+  }
+
   update(time: number): void {
     this.hunger_ -= this.hungerSpeed_ * appStore.simulationSpeed_
+    this.urgeToReproduce_ -= this.urgeToReproduceSpeed_ * appStore.simulationSpeed_
+    if (this.urgeToReproduce_ < 0) {
+      this.urgeToReproduce_ = 0
+    }
 
     if (this.isHungry) {
       super.goToTarget()
@@ -73,16 +91,31 @@ export class Rabbit extends Animal {
     }
   }
 
-  drawHunger(): void {
-    this.ctx_.fillStyle = this.isHungry ? 'red' : 'lightgreen'
-    this.ctx_.fillRect(this.position.x - 22, this.position.y - 20, (44 * this.hunger_) / 100, 7)
+  drawUrgeToReproduce(): void {
+    const barWidth = 44
+    const barHeight = 7
+
+    this.ctx_.fillStyle = this.wantsToMate ? 'yellow' : 'lightgray'
+    this.ctx_.fillRect(this.position.x - 22, this.position.y - 29, (barWidth * this.urgeToReproduce_) / 100, barHeight)
 
     this.ctx_.strokeStyle = 'black'
-    this.ctx_.strokeRect(this.position.x - 22, this.position.y - 20, 44, 7)
+    this.ctx_.strokeRect(this.position.x - 22, this.position.y - 29, barWidth, barHeight)
+  }
+
+  drawHunger(): void {
+    const barWidth = 44
+    const barHeight = 7
+
+    this.ctx_.fillStyle = this.isHungry ? 'red' : 'lightgreen'
+    this.ctx_.fillRect(this.position.x - 22, this.position.y - 20, (barWidth * this.hunger_) / 100, barHeight)
+
+    this.ctx_.strokeStyle = 'black'
+    this.ctx_.strokeRect(this.position.x - 22, this.position.y - 20, barWidth, barHeight)
   }
 
   draw(): void {
     // this.drawViewRadius()
+    this.drawUrgeToReproduce()
     this.drawHunger()
     super.draw()
   }

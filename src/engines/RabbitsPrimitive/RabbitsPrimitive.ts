@@ -1,14 +1,15 @@
 import { Blueberrie } from 'src/entities/Blueberrie'
 import { Rabbit } from 'src/entities/Rabbit'
-import { distanceBetween, getRandomVector2DOnCircle } from 'src/geometry'
+import { distanceBetween, getRandomVector2DOnCircle, Vector2D } from 'src/geometry'
 import { appStore } from 'src/stores/appStore'
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from 'src/utils/constants'
 
 const INITIAL_RABBITS_NUMBER = 50
 const INITIAL_BLUEBERRIES_NUMBER = 30
-const BLUEBERRIES_PER_MINUTE = 80
+const BLUEBERRIES_PER_MINUTE = 20
 
 export class RabbitsPrimitive {
+  paused_ = false
   rabbits_: Set<Rabbit> = new Set()
   blueberries_: Set<Blueberrie> = new Set()
 
@@ -20,6 +21,10 @@ export class RabbitsPrimitive {
     for (let i = 0; i < INITIAL_BLUEBERRIES_NUMBER; i++) {
       this.blueberries_.add(new Blueberrie(this.ctx_))
     }
+  }
+
+  get paused(): boolean {
+    return this.paused_
   }
 
   spawnBlueberries(): void {
@@ -38,7 +43,37 @@ export class RabbitsPrimitive {
         return
       }
 
-      if (r.isHungry) {
+      if (r.wantsToMate) {
+        let closestMate = null
+        let minDistance = Infinity
+
+        for (const potentialMate of this.rabbits_) {
+          if (!potentialMate.wantsToMate || potentialMate === r) continue
+
+          const distance = distanceBetween(potentialMate.position, r.position)
+
+          if (distance < r.viewRadius && distance < minDistance) {
+            closestMate = potentialMate
+            minDistance = distance
+          }
+        }
+
+        if (closestMate) {
+          r.setTarget(closestMate.position)
+        }
+
+        if (closestMate && minDistance < 1) {
+          r.satisfyUrgeToreproduce()
+          closestMate.satisfyUrgeToreproduce()
+
+          const hungerSpeed = Math.random() > 0.5 ? r.hungerSpeed : closestMate.hungerSpeed
+          const mutatedHungerSpeed = Math.random() < 0.2 ? hungerSpeed + (Math.random() * 0.0006 - 0.0003) : hungerSpeed
+
+          this.rabbits_.add(new Rabbit(this.ctx_, new Vector2D(r.position), mutatedHungerSpeed))
+        }
+      }
+
+      if (r.isHungry && !r.wantsToMate) {
         let closestBlueberrie = null
         let minDistance = Infinity
 
@@ -59,10 +94,10 @@ export class RabbitsPrimitive {
           r.eat()
           this.blueberries_.delete(closestBlueberrie)
         }
+      }
 
-        if (!r.hasTarget) {
-          r.setTarget(getRandomVector2DOnCircle(r.position, r.viewRadius))
-        }
+      if ((r.isHungry || r.wantsToMate) && !r.hasTarget) {
+        r.setTarget(getRandomVector2DOnCircle(r.position, r.viewRadius))
       }
 
       r.update(ellapsed)
@@ -82,7 +117,12 @@ export class RabbitsPrimitive {
     this.updateRabbits(ellapsed)
   }
 
+  pause(): void {
+    this.paused_ = true
+  }
+
   run(): void {
+    this.paused_ = false
     let then = performance.now()
 
     const loop = (): void => {
@@ -92,7 +132,9 @@ export class RabbitsPrimitive {
 
       this.updateAndDraw(ellapsed)
 
-      requestAnimationFrame(loop)
+      if (!this.paused_) {
+        requestAnimationFrame(loop)
+      }
     }
 
     requestAnimationFrame(loop)

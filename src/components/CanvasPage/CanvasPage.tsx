@@ -20,6 +20,16 @@ export const CanvasPage = (): JSX.Element => {
 
     const gameEngine = createGameEngine(appStore.selectedGameEngine_, ctx)
     gameEngine.run()
+
+    const handleSpace = (e: KeyboardEvent): void => {
+      if (e.key === ' ') {
+        gameEngine.paused ? gameEngine.run() : gameEngine.pause()
+      }
+    }
+
+    window.addEventListener('keydown', handleSpace)
+
+    return (): void => window.removeEventListener('keydown', handleSpace)
   }, [])
 
   return (
