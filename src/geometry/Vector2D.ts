@@ -82,5 +82,30 @@ export const getRandomVector2DInCircle = (center: Vector2D, radius: number): Vec
   return new Vector2D(x, y)
 }
 
+export const getRandomVector2DOnCircle = (center: Vector2D, radius: number): Vector2D => {
+  const angle = Math.random() * 2 * Math.PI
+
+  let x = radius * Math.cos(angle) + center.x
+  let y = radius * Math.sin(angle) + center.y
+
+  if (x >= CANVAS_WIDTH) {
+    x = CANVAS_WIDTH
+  }
+
+  if (x <= 0) {
+    x = 0
+  }
+
+  if (y >= CANVAS_HEIGHT) {
+    y = CANVAS_HEIGHT
+  }
+
+  if (y <= 0) {
+    y = 0
+  }
+
+  return new Vector2D(x, y)
+}
+
 export const distanceBetween = (p1: Vector2D, p2: Vector2D): number =>
   Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2))

@@ -14,7 +14,13 @@ export class Entity {
   }
 
   draw(): void {
-    this.ctx_.drawImage(this.img_, this.position_.x, this.position_.y, this.width_, this.height_)
+    this.ctx_.drawImage(
+      this.img_,
+      this.position_.x - this.width_ / 2,
+      this.position_.y - this.height_ / 2,
+      this.width_,
+      this.height_,
+    )
   }
 
   get position(): Vector2D {

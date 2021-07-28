@@ -1,5 +1,6 @@
 import { Blueberrie } from 'src/entities/Blueberrie'
 import { Rabbit } from 'src/entities/Rabbit'
+import { distanceBetween, getRandomVector2DOnCircle } from 'src/geometry'
 import { CANVAS_HEIGHT, CANVAS_WIDTH } from 'src/utils/constants'
 
 const INITIAL_RABBITS_NUMBER = 50
@@ -19,17 +20,46 @@ export class RabbitsPrimitive {
     }
   }
 
-  updateAndDraw(ellapsed: number): void {
-    this.ctx_.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
-
+  updateRabbits(ellapsed: number): void {
     this.rabbits_.forEach((r) => {
+      if (r.isDead) {
+        this.rabbits_.delete(r)
+
+        return
+      }
+
+      if (r.isHungry) {
+        for (const blueberrie of this.blueberries_) {
+          const distance = distanceBetween(blueberrie.position, r.position)
+
+          if (distance < r.viewRadius) {
+            r.setTarget(blueberrie.position)
+          }
+
+          if (distance < 1) {
+            r.eat()
+            this.blueberries_.delete(blueberrie)
+          }
+        }
+
+        if (!r.hasTarget) {
+          r.setTarget(getRandomVector2DOnCircle(r.position, r.viewRadius))
+        }
+      }
+
       r.update(ellapsed)
       r.draw()
     })
+  }
+
+  updateAndDraw(ellapsed: number): void {
+    this.ctx_.clearRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
 
     this.blueberries_.forEach((b) => {
       b.draw()
     })
+
+    this.updateRabbits(ellapsed)
   }
 
   run(): void {
